@@ -1,0 +1,11 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+ffi = true
+solc = "0.8.27"                                 # or 0.8.26 (latest stable)
+remappings = ["@poseidon2/=lib/poseidon2-evm/"]
+optimizer = true
+via_ir = false
+optimizer_runs = 50                             # Try 800–2000 for verifiers
+# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

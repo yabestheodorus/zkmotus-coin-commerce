@@ -1,0 +1,29 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+
+
+@theme {
+  --font-lineseed: "LINE Seed JP", sans-serif;
+  --font-playwrite: "Playwrite CU", cursive;
+  --font-libre: "Libre Baskerville", serif;
+  --font-jakarta: "Plus Jakarta Sans", sans-serif;
+  --font-bitcount: "Bitcount Single", system-ui;
+  --color-primaryGray: #f3f3f3;
+  --color-primaryAccent: #8B7E6A;
+  --color-parchment: #F5F1EA;
+  --color-burgundy: #6B1E23;
+  --color-ink: #2B2B2B;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}

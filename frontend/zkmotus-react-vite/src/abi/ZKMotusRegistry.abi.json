@@ -1,0 +1,171 @@
+[
+  {
+    "type": "constructor",
+    "inputs": [
+      {
+        "name": "_paymentContract",
+        "type": "address",
+        "internalType": "address payable"
+      },
+      {
+        "name": "_merchantAddress",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "zkVerifier",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registerAuthenticity",
+    "inputs": [
+      {
+        "name": "_authenticityCommitment",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "_orderCommitment",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "_serialNumber",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "verifyAuthenticity",
+    "inputs": [
+      {
+        "name": "_proof",
+        "type": "bytes",
+        "internalType": "bytes"
+      },
+      {
+        "name": "_serialNumber",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "_nonce",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "event",
+    "name": "AuthenticityVerified",
+    "inputs": [
+      {
+        "name": "serialNumber",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "ItemsAuthenticityRegistered",
+    "inputs": [
+      {
+        "name": "serialNumber",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "error",
+    "name": "ZKMotusRegistry__InvalidNonce",
+    "inputs": [
+      {
+        "name": "nonce",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ZKMotusRegistry__InvalidProof",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "ZKMotusRegistry__ItemNotPaid",
+    "inputs": [
+      {
+        "name": "serialNumber",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ZKMotusRegistry__ItemNotRegistered",
+    "inputs": [
+      {
+        "name": "serialNumber",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ZKMotusRegistry__ItemsAlreadyRegistered",
+    "inputs": [
+      {
+        "name": "serialNumber",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ZKMotusRegistry__NotFromMerchant",
+    "inputs": [
+      {
+        "name": "sender",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ZKMotusRegistry__UnauthorizedBuyer",
+    "inputs": [
+      {
+        "name": "serialNumber",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ZKMotusRegistry__ZeroValue",
+    "inputs": []
+  }
+]

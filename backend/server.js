@@ -1,0 +1,74 @@
+import dotenv from "dotenv";
+dotenv.config();
+import ZKMotusPayment from "./abi/ZKMotusPayment.abi.json" assert { type: "json" };
+
+
+import express from "express";
+import cors from "cors";
+import { connectDB } from "./config/db.js";
+import productRoutes from "./routes/product.route.js";
+import wishlistRoutes from "./routes/wishlist.route.js";
+import orderRoutes from "./routes/order.route.js";
+import "./controllers/order.events.js";
+import { setupOrderEvents } from "./controllers/order.events.js";
+import { ethers } from "ethers";
+
+
+const app = express();
+
+// Connect DB
+connectDB();
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+setupOrderEvents().catch(err => {
+  console.error("❌ Failed to setup blockchain listeners:", err);
+  process.exit(1); // Critical failure — stop server
+});
+
+setTimeout(async () => {
+  const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
+  const latestBlock = await provider.getBlockNumber();
+
+  const fromBlock = Math.max(0, latestBlock - 10);
+  const toBlock = latestBlock;
+
+  const logs = await provider.getLogs({
+    address: process.env.PAYMENT_CONTRACT,
+    fromBlock,
+    toBlock
+  });
+
+  console.log(`\n=== RAW LOGS FROM LAST 10 BLOCKS ===`);
+  console.log(`Found ${logs.length} logs from contract ${process.env.PAYMENT_CONTRACT}`);
+
+  logs.forEach((log, i) => {
+    console.log(`\nLog ${i + 1}:`);
+    console.log(`  Block: ${log.blockNumber}`);
+    console.log(`  Topics: ${log.topics}`);
+    console.log(`  Data: ${log.data}`);
+  });
+
+  // Try to parse them manually
+  const contract = new ethers.Contract(process.env.PAYMENT_CONTRACT, ZKMotusPayment, provider);
+  logs.forEach((log, i) => {
+    try {
+      const parsed = contract.interface.parseLog(log);
+      console.log(`\n✅ Log ${i + 1} parsed as event:`, parsed.name, parsed.args);
+    } catch (e) {
+      console.log(`\n❌ Log ${i + 1} could not be parsed:`, e.message);
+    }
+  });
+}, 5000);
+
+// Routes
+app.use("/api/products", productRoutes);
+app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/order", orderRoutes);
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () =>
+  console.log(`Server running on port ${PORT}`)
+);
