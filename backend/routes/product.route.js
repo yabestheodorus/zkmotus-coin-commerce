@@ -1,6 +1,6 @@
 import express from "express"
 import Product from "../models/product.model.js";
-import { getAllCategory, getAllProduct, getProductDetailsById, getRecommendedProduct } from "../controllers/product.controller.js";
+import { getAllCategory, getAllProduct, getProductByRawSerial, getProductDetailsById, getRecommendedProduct } from "../controllers/product.controller.js";
 
 const router = express.Router();
 
@@ -14,7 +14,11 @@ router.get("/recommended", getRecommendedProduct);
 router.get("/categories", getAllCategory);
 
 // GET product by serial number
+router.get("/serial/:serialRaw", getProductByRawSerial);
+
+
 router.get('/:id', getProductDetailsById);
+
 
 
 

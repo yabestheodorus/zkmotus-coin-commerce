@@ -6,6 +6,7 @@ import Notification from "../../../layout/Notification";
 import { poseidon2Hash } from "@zkpassport/poseidon2";
 import toast from "react-hot-toast";
 import { pad, toHex } from "viem";
+import { stringToBigInt } from "../../../../Utils";
 
 function usePayOrder({ orderId, totalAmount }) {
   const [secret, setSecret] = useState("");
@@ -54,16 +55,16 @@ function usePayOrder({ orderId, totalAmount }) {
     }
 
     try {
-      console.log(secret, orderId); // must be true
+      const secretBigInt = stringToBigInt(secret);
+
       // Generate the commitment as bigint
-      const commitmentBigInt = poseidon2Hash([BigInt(secret), BigInt(orderId)]);
+      const commitmentBigInt = poseidon2Hash([
+        BigInt(secretBigInt),
+        BigInt(orderId),
+      ]);
 
       // Convert bigint to 32-byte hex string (bytes32)
       const commitmentBytes32 = pad(toHex(commitmentBigInt), { size: 32 });
-
-      console.log("Commitment (bytes32):", commitmentBytes32);
-      console.log("order id:", orderId);
-      // Should be: 0x + exactly 64 hex characters
 
       payOrderCall.mutate({
         address: import.meta.env.VITE_PAYMENT_CONTRACT,

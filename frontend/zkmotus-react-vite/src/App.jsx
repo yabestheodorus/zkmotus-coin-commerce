@@ -1,6 +1,5 @@
 import { Routes, Route } from "react-router-dom";
 import Layout from "./layout/Layout";
-import Authenticity from "./pages/Authenticity";
 import Collection from "./pages/collection/Collection";
 import Provenance from "./pages/provenance/Provenance";
 import ProductDetails from "./pages/productDetails/ProductDetails";
@@ -18,7 +17,6 @@ export default function App() {
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/collection/:category" element={<CollectionPage />} />
         <Route path="/collection" element={<Collection />} />
-        <Route path="/authenticity" element={<Authenticity />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/verify" element={<VerifyPage />} />
         <Route path="/orders" element={<OrderList />} />

@@ -1,6 +1,5 @@
 import React from "react";
-import { FaDownload, FaEllipsisV } from "react-icons/fa";
-import { FiClock, FiUser, FiMapPin, FiDollarSign } from "react-icons/fi";
+import { FiUser } from "react-icons/fi";
 import { IoMdStar } from "react-icons/io";
 import StatusBadge from "./components/StatusBadge";
 import ProductItem from "./components/ProductItem";
@@ -48,10 +47,14 @@ const OrderCard = ({ order }) => {
           </div>
         </div>
 
-        <InputSecretModal
-          orderId={order.orderId}
-          totalAmount={order.totalAmount}
-        />
+        {order.status == "PAID" ? (
+          <div className="rounded-full bg-gray-300 px-4 py-2">Order Paid</div>
+        ) : (
+          <InputSecretModal
+            orderId={order.orderId}
+            totalAmount={order.totalAmount}
+          />
+        )}
       </div>
 
       {/* Order Summary */}
@@ -74,13 +77,16 @@ const OrderCard = ({ order }) => {
 
         <div className="flex flex-col">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {order.items?.map((item, idx) => {
+            {order.serials?.map((item, idx) => {
               return (
                 <ProductItem
                   key={idx}
                   product={item.productInfo}
                   quantity={item.quantity}
-                  serial={order.serials[idx].rawSerial}
+                  serial={item.rawSerial}
+                  serialHash={item.serialHash}
+                  orderId={order.orderId}
+                  status={item.status}
                 />
               );
             })}

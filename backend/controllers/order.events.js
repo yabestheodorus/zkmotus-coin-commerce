@@ -1,6 +1,7 @@
 
 import { ethers } from "ethers";
 import ZKMotusPayment from "../abi/ZKMotusPayment.abi.json" assert { type: "json" };
+import ZKMotusRegistry from "../abi/ZKMotusRegistry.abi.json" assert { type: "json" };
 import Order from "../models/order.model.js";
 import { SerialCounter } from "../models/serialcounter.model.js";
 
@@ -14,6 +15,13 @@ export async function setupOrderEvents() {
   const paymentContract = new ethers.Contract(
     process.env.PAYMENT_CONTRACT,
     ZKMotusPayment,
+    provider
+  );
+
+
+  const registryContract = new ethers.Contract(
+    process.env.REGISTRY_CONTRACT,
+    ZKMotusRegistry,
     provider
   );
 
@@ -95,9 +103,45 @@ export async function setupOrderEvents() {
 
   );
 
+
+
+  registryContract.on(
+    "ItemsAuthenticityRegistered",
+    async (serialNumber) => {
+      try {
+        const serialHash = serialNumber.toString().toLowerCase();
+
+        // Find order containing this serial in UNREGISTERED state
+        const order = await Order.findOne({
+          "serials.serialHash": serialHash,
+          "serials.status": "UNREGISTERED"
+        });
+
+        if (!order) {
+          console.warn(`⚠️ No UNREGISTERED serial found for hash: ${serialHash}`);
+          return;
+        }
+
+        // Update serial status to REGISTERED
+        const serial = order.serials.find(
+          s => s.serialHash.toLowerCase() === serialHash
+        );
+
+        if (serial) {
+          serial.status = "REGISTERED";
+          await order.save();
+          console.log(`✅ Serial ${serialHash} updated to REGISTERED`);
+        }
+      } catch (error) {
+        console.error("❌ ItemsAuthenticityRegistered handler error:", error);
+      }
+    }
+  );
+
   console.log("✅ Order event listeners initialized");
   return () => paymentContract.removeAllListeners(); // Cleanup function
 }
+
 
 const updateSerialCounterBasedOnProductQty = async (order) => {
   // 2️⃣ Count per product

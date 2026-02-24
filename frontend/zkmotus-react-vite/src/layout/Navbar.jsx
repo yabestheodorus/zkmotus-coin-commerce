@@ -13,7 +13,7 @@ export default function Navbar() {
         <div className="hidden flex-1 gap-8 text-sm text-neutral-400 md:flex">
           <NavItem to="/provenance" label="Provenance" />
           <NavItem to="/collection" label="Collection" />
-          <NavItem to="/authenticity" label="Authenticity" />
+          <NavItem to="/orders" label="Orders" />
           <NavItem to="/verify" label="Verify" />
         </div>
 

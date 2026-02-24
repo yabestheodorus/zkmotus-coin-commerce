@@ -1,13 +1,17 @@
 import { useState } from "react";
 import { GiWaxSeal } from "react-icons/gi";
 import { TbScan, TbLock } from "react-icons/tb";
+import useVerifyAuthenticity from "./hooks/useVerifyAuthenticity";
+import { formatEther } from "viem";
 
 export default function VerifyPage() {
   const [step, setStep] = useState(1); // 1–4
-  const [serial, setSerial] = useState("");
+
+  const { product, isLoading, refetch, isFetching, serialRaw, setSerialRaw } =
+    useVerifyAuthenticity();
+
   const [secret, setSecret] = useState("");
   const [confirmSecret, setConfirmSecret] = useState("");
-  const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(false);
 
   // Dummy product
@@ -23,7 +27,6 @@ export default function VerifyPage() {
   // Handlers
   const handleCheckSerial = () => {
     setProduct(dummyProduct);
-    setStep(2);
   };
 
   // Step 2: Generate proof
@@ -59,14 +62,17 @@ export default function VerifyPage() {
             <input
               type="text"
               placeholder="Enter serial code"
-              value={serial}
-              onChange={(e) => setSerial(e.target.value)}
+              value={serialRaw}
+              onChange={(e) => setSerialRaw(e.target.value)}
               className="border-ink/20 focus:ring-burgundy/40 w-full rounded-xl border px-4 py-3 text-center text-sm outline-none focus:ring-2"
             />
             <button
               className="bg-burgundy text-parchment flex items-center gap-2 rounded-full px-6 py-3 font-medium hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
-              onClick={handleCheckSerial}
-              disabled={!serial}
+              onClick={(e) => {
+                refetch();
+                setStep(2);
+              }}
+              disabled={!serialRaw}
             >
               <TbScan size={20} /> Check Product
             </button>
@@ -79,7 +85,7 @@ export default function VerifyPage() {
             {/* Product */}
             <div className="border-ink/10 h-48 w-48 overflow-hidden rounded-2xl border bg-white">
               <img
-                src={product.image}
+                src={product.imageURL.thumbnail}
                 alt={product.name}
                 className="h-full w-full object-contain"
               />
@@ -90,7 +96,7 @@ export default function VerifyPage() {
               {product.description}
             </p>
             <p className="text-lg font-medium">
-              {product.price} {product.currency}
+              {formatEther(product.price)} {product.currency}
             </p>
 
             {/* Warning */}
