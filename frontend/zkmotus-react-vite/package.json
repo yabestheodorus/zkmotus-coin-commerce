@@ -10,7 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@aztec/bb.js": "^3.0.0-nightly.20260102",
     "@noble/hashes": "^2.0.1",
+    "@noir-lang/acvm_js": "^1.0.0-beta.18",
+    "@noir-lang/noir_js": "^1.0.0-beta.18",
+    "@noir-lang/noirc_abi": "^1.0.0-beta.18",
     "@reown/appkit": "^1.8.17",
     "@reown/appkit-adapter-wagmi": "^1.8.17",
     "@tailwindcss/vite": "^4.1.18",
@@ -25,6 +29,7 @@
     "react-router-dom": "^7.13.0",
     "tailwindcss": "^4.1.18",
     "viem": "^2.45.0",
+    "vite-plugin-node-polyfills": "^0.25.0",
     "wagmi": "^3.4.1"
   },
   "devDependencies": {
