@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { GiWaxSeal } from "react-icons/gi";
 import useVerifyAuthenticity from "./hooks/useVerifyAuthenticity";
 import SerialNumberInput from "./components/SerialNumberInput";
@@ -6,13 +5,12 @@ import ProductInfo from "./components/ProductInfo";
 import ProofInfo from "./components/ProofInfo";
 
 export default function VerifyPage() {
-  const [step, setStep] = useState(1); // 1–4
-
   const {
     product,
     refetch,
     isFetching,
     proof,
+    proofHex,
     secret,
     setSecret,
     serialRaw,
@@ -22,18 +20,10 @@ export default function VerifyPage() {
     loading,
     setLoading,
     generateProof,
+    handleGenerateProof,
+    step,
+    setStep,
   } = useVerifyAuthenticity();
-
-  // Step 2: Generate proof
-  const handleGenerateProof = () => {
-    // setLoading(true);
-    generateProof();
-
-    setTimeout(() => {
-      setLoading(false);
-      setStep(3);
-    }, 3000);
-  };
 
   // Step 3: Verify proof
   const handleVerifyProof = () => {
@@ -44,7 +34,14 @@ export default function VerifyPage() {
     }, 3000);
   };
   return (
-    <div className="bg-parchment font-lineseed text-ink flex min-h-screen flex-col items-center px-4 py-8">
+    <div className="font-lineseed text-ink flex min-h-screen flex-col items-center px-4 py-8">
+      {/* Background decoration */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="bg-burgundy/5 absolute -top-40 -right-40 h-96 w-96 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-yellow-700/5 blur-3xl" />
+        <div className="via-parchment/20 absolute top-1/2 left-1/2 h-full w-full -translate-x-1/2 -translate-y-1/2 bg-gradient-to-b from-transparent to-transparent" />
+      </div>
+
       {/* Step Card */}
       <div className="flex w-full max-w-xl flex-col items-center gap-6 rounded-3xl bg-white p-6 shadow-2xl transition-all duration-500">
         {/* Step 1: Placeholder + Serial Input */}
@@ -76,6 +73,7 @@ export default function VerifyPage() {
             loading={loading}
             handleVerifyProof={handleVerifyProof}
             proof={proof}
+            proofHex={proofHex}
           />
         )}
 

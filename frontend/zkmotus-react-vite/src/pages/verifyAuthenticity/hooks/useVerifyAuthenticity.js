@@ -24,7 +24,9 @@ function useVerifyAuthenticity(props) {
   const [confirmSecret, setConfirmSecret] = useState("");
   const [loading, setLoading] = useState(false);
   const [serialRaw, setSerialRaw] = useState("");
+  const [proofHex, setProofHex] = useState("");
   const [proof, setProof] = useState("");
+  const [step, setStep] = useState(1); // 1–4
 
   const { data, refetch, isFetching } = useQuery({
     queryKey: ["productBySerial", serialRaw],
@@ -51,6 +53,13 @@ function useVerifyAuthenticity(props) {
     // Last resort: try to convert
     return '0x' + String(val).toString(16);
   };
+
+  // Step 2: Generate proof
+  const handleGenerateProof = () => {
+    setLoading(true);
+    generateProof();
+  };
+
 
   const generateProof = async () => {
     try {
@@ -96,7 +105,7 @@ function useVerifyAuthenticity(props) {
         typeof val === 'bigint' ? '0x' + val.toString(16) : val
       );
 
-      // Encode with hex strings
+      // Encode with hex strings, decode later when verify proof
       const result = encodeAbiParameters(
         [
           { type: "bytes" },
@@ -105,9 +114,10 @@ function useVerifyAuthenticity(props) {
         [proofHex, publicInputsHex]  // ← Both are now strings
       );
 
-      setProof(result);
+      setProofHex(result); // proof and public input in form of string hex.
+      setProof(proof);
       setLoading(false);
-
+      setStep(3);
     } catch (error) {
       console.error("Error generating proof:", error);
       setLoading(false);
@@ -124,6 +134,7 @@ function useVerifyAuthenticity(props) {
     refetch,
     isFetching,
     proof,
+    proofHex,
     secret,
     setSecret,
     serialRaw,
@@ -132,7 +143,9 @@ function useVerifyAuthenticity(props) {
     setConfirmSecret,
     loading,
     setLoading,
-    generateProof
+    generateProof,
+    handleGenerateProof,
+    step, setStep
   }
 }
 
