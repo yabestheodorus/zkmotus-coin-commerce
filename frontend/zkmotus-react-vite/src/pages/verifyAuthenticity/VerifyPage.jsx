@@ -23,15 +23,18 @@ export default function VerifyPage() {
     handleGenerateProof,
     step,
     setStep,
+     verifyLoading,
+    callVerifyProof,
   } = useVerifyAuthenticity();
 
   // Step 3: Verify proof
-  const handleVerifyProof = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setStep(4);
-    }, 3000);
+  const handleVerifyProof = async () => {
+    await callVerifyProof()
+
+    // setTimeout(() => {
+    //   setLoading(false);
+    //   setStep(4);
+    // }, 3000);
   };
   return (
     <div className="font-lineseed text-ink flex min-h-screen flex-col items-center px-4 py-8">
@@ -70,7 +73,7 @@ export default function VerifyPage() {
         {/* Step 3: Proof Generated + Verify */}
         {step === 3 && (
           <ProofInfo
-            loading={loading}
+            loading={verifyLoading}
             handleVerifyProof={handleVerifyProof}
             proof={proof}
             proofHex={proofHex}

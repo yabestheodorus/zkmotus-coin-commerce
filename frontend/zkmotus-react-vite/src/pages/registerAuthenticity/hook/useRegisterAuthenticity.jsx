@@ -3,7 +3,7 @@ import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import ZKMotusRegistryABI from "../../../abi/ZKMotusRegistry.abi.json" with { type: "json" };
 import { poseidon2Hash } from "@zkpassport/poseidon2";
 import { pad, toHex } from "viem";
-import { serialToBigInt, stringToBigInt } from "../../../../Utils";
+import { serialToBigInt, stringToBigInt, toBytes32 } from "../../../../Utils";
 import toast from "react-hot-toast";
 import Notification from "../../../layout/Notification";
 
@@ -87,15 +87,21 @@ export function useRegisterAuthenticity({ serialRaw, serialHash, orderId }) {
 
       // Generate commitment (same as during payment)
       const orderCommitment = poseidon2Hash([secretBigInt, orderIdBigInt]);
-      const orderCommitmentBytes32 = pad(toHex(orderCommitment), { size: 32 });
+      const orderCommitmentBytes32 = toBytes32(orderCommitment);
 
       const authenticityCommitment = poseidon2Hash([
         secretBigInt,
         serialToBigInt(serialRaw),
       ]);
-      const authenticityCommitmentBytes32 = pad(toHex(authenticityCommitment), {
-        size: 32,
-      });
+      const authenticityCommitmentBytes32 = toBytes32(authenticityCommitment);
+
+      console.log(
+        "AUTHENTICITY COMMITMENT REGISTRATION : ",
+        authenticityCommitmentBytes32,
+      );
+      const serialBigInt = serialToBigInt(serialRaw);
+      const serialHashed = poseidon2Hash([serialBigInt]);
+      const serialHashedBytes32 = toBytes32(serialHashed);
 
       const hash = writeContracts.mutate({
         address: import.meta.env.VITE_REGISTRY_CONTRACT,
@@ -104,7 +110,7 @@ export function useRegisterAuthenticity({ serialRaw, serialHash, orderId }) {
         args: [
           authenticityCommitmentBytes32,
           orderCommitmentBytes32,
-          serialHash,
+          serialHashedBytes32,
         ],
         gas: 500_000n,
       });

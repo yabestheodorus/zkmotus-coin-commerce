@@ -4,7 +4,7 @@ import { TbScan } from "react-icons/tb";
 import usePayOrder from "../hook/usePayOrder.jsx";
 import { FaArrowRight } from "react-icons/fa";
 import { formatRoundedBalance } from "../../../../Utils.js";
-import { WalletCheck } from "../../../../public/icons/WalletCheck.jsx";
+import { FaWallet } from "react-icons/fa6";
 function InputSecretModal({ orderId, totalAmount }) {
   const {
     secret,
@@ -25,7 +25,7 @@ function InputSecretModal({ orderId, totalAmount }) {
         className="btn bg-burgundy hover:bg-opacity-90 group flex items-center gap-2 rounded-full text-white transition-all duration-300 hover:shadow-lg"
         onClick={() => document.getElementById(modalId).showModal()}
       >
-        <WalletCheck
+        <FaWallet
           size={20}
           color={"#FFFFFF"}
           className="transition-transform group-hover:rotate-12"

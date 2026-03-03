@@ -23,7 +23,7 @@ contract ZKMotusRegistryTest is ZKMotusPaymentTest {
 
         payment.receivePayment{value: TOTAL_PRICE}(ORDER_ID, orderCommitment);
 
-        vm.expectPartialRevert(ZKMotusRegistry.ZKMotusRegistry__ZeroValue.selector);
+         vm.expectRevert(ZKMotusRegistry.ZKMotusRegistry__ZeroValue.selector );
         registry.registerAuthenticity(bytes32(0), orderCommitment, product1SerialHashed);
     }
 
@@ -35,7 +35,7 @@ contract ZKMotusRegistryTest is ZKMotusPaymentTest {
         vm.prank(MERCHANT);
         payment.createNewOrder(ORDER_ID, serialNumbers, TOTAL_PRICE);
 
-        vm.expectPartialRevert(ZKMotusRegistry.ZKMotusRegistry__ItemNotPaid.selector);
+         vm.expectRevert(abi.encodeWithSelector(ZKMotusRegistry.ZKMotusRegistry__ItemNotPaid.selector, serialNumbers[0]));
         registry.registerAuthenticity(purchaseCommitmentProduct1, orderCommitment, product1SerialHashed);
     }
 
@@ -48,7 +48,7 @@ contract ZKMotusRegistryTest is ZKMotusPaymentTest {
         payment.createNewOrder(ORDER_ID, serialNumbers, TOTAL_PRICE);
         payment.receivePayment{value: TOTAL_PRICE}(ORDER_ID, orderCommitment);
 
-        vm.expectPartialRevert(ZKMotusRegistry.ZKMotusRegistry__UnauthorizedBuyer.selector);
+        vm.expectRevert(abi.encodeWithSelector(ZKMotusRegistry.ZKMotusRegistry__UnauthorizedBuyer.selector, serialNumbers[0]));
         registry.registerAuthenticity(purchaseCommitmentProduct1, orderCommitmentWithPerson2, product1SerialHashed);
     }
 
@@ -63,7 +63,7 @@ contract ZKMotusRegistryTest is ZKMotusPaymentTest {
 
         registry.registerAuthenticity(purchaseCommitmentProduct1, orderCommitment, product1SerialHashed);
 
-        vm.expectPartialRevert(ZKMotusRegistry.ZKMotusRegistry__ItemsAlreadyRegistered.selector);
+         vm.expectRevert(abi.encodeWithSelector(ZKMotusRegistry.ZKMotusRegistry__ItemsAlreadyRegistered.selector, serialNumbers[0]));
         registry.registerAuthenticity(purchaseCommitmentProduct1, orderCommitment, product1SerialHashed);
     }
 
@@ -106,7 +106,7 @@ contract ZKMotusRegistryTest is ZKMotusPaymentTest {
 
         (bytes memory proof,) =
             _generateProof(purchaseCommitmentProduct1, product1SerialHashed, product1Serial, fieldNonce);
-        vm.expectPartialRevert(ZKMotusRegistry.ZKMotusRegistry__NotFromMerchant.selector);
+         vm.expectRevert(abi.encodeWithSelector(ZKMotusRegistry.ZKMotusRegistry__NotFromMerchant.selector, address(this)));
         registry.verifyAuthenticity(proof, product1SerialHashed, bytes32(fieldNonce));
     }
 
@@ -155,7 +155,7 @@ contract ZKMotusRegistryTest is ZKMotusPaymentTest {
 
         // reverify authenticity using same nonce will revert
         vm.prank(MERCHANT);
-        vm.expectPartialRevert(ZKMotusRegistry.ZKMotusRegistry__InvalidNonce.selector);
+         vm.expectRevert(abi.encodeWithSelector(ZKMotusRegistry.ZKMotusRegistry__InvalidNonce.selector, bytes32(fieldNonce)));
         registry.verifyAuthenticity(proof, product1SerialHashed, bytes32(fieldNonce));
     }
 
@@ -180,7 +180,7 @@ contract ZKMotusRegistryTest is ZKMotusPaymentTest {
 
         // reverify authenticity using unregistered item
         vm.prank(MERCHANT);
-        vm.expectPartialRevert(ZKMotusRegistry.ZKMotusRegistry__ItemNotRegistered.selector);
+         vm.expectRevert(abi.encodeWithSelector(ZKMotusRegistry.ZKMotusRegistry__ItemNotRegistered.selector, serialNumbers[1]));
         registry.verifyAuthenticity(proof, product2SerialHashed, bytes32(fieldNonce));
     }
 
@@ -206,7 +206,7 @@ contract ZKMotusRegistryTest is ZKMotusPaymentTest {
 
         // verify invalid proof by using purchase commitment product 1, but use product 2 serial as public input
         vm.prank(MERCHANT);
-        vm.expectPartialRevert(ZKMotusRegistry.ZKMotusRegistry__InvalidProof.selector);
+         vm.expectRevert(ZKMotusRegistry.ZKMotusRegistry__InvalidProof.selector);
         registry.verifyAuthenticity(proof, product2SerialHashed, bytes32(fieldNonce));
     }
 }

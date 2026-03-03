@@ -1,58 +1,48 @@
-import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
-import { get } from "../../../lib/api";
+import { useQuery } from "@tanstack/react-query";
+import { useRef, useState } from "react";
+import { get, post } from "../../../lib/api";
 import { poseidon2Hash } from "@zkpassport/poseidon2";
 
 import { Barretenberg, UltraHonkBackend } from "@aztec/bb.js";
-import { Noir } from "@noir-lang/noir_js"
-import initNoirC from '@noir-lang/noirc_abi';
-import initACVM from '@noir-lang/acvm_js';
-import acvm from '@noir-lang/acvm_js/web/acvm_js_bg.wasm?url';
-import noirc from '@noir-lang/noirc_abi/web/noirc_abi_wasm_bg.wasm?url';
+import { Noir } from "@noir-lang/noir_js";
+import initNoirC from "@noir-lang/noirc_abi";
+import initACVM from "@noir-lang/acvm_js";
+import acvm from "@noir-lang/acvm_js/web/acvm_js_bg.wasm?url";
+import noirc from "@noir-lang/noirc_abi/web/noirc_abi_wasm_bg.wasm?url";
 
 // Initialize WASM modules
 await Promise.all([initACVM(fetch(acvm)), initNoirC(fetch(noirc))]);
 
-import circuit from "../../../lib/circuits.json"  with { type: "json" };
-import { generateBytes32Nonce, stringToBigInt } from '../../../../Utils';
-import { encodeAbiParameters } from 'viem';
-
+import circuit from "../../../lib/circuits.json" with { type: "json" };
+import {
+  generateBytes32Nonce,
+  serialToBigInt,
+  stringToBigInt,
+  toBytes32,
+} from "../../../../Utils";
 
 function useVerifyAuthenticity(props) {
-
   const [secret, setSecret] = useState("");
   const [confirmSecret, setConfirmSecret] = useState("");
   const [loading, setLoading] = useState(false);
+  const [verifyLoading, setVerifyLoading] = useState(false);
   const [serialRaw, setSerialRaw] = useState("");
   const [proofHex, setProofHex] = useState("");
   const [proof, setProof] = useState("");
   const [step, setStep] = useState(1); // 1–4
 
+  const [nonce, setNonce] = useState(null);
+  const [storedPublicInputsHex, setStoredPublicInputsHex] = useState(null);
+
+  const backendRef = useRef(null);
+  const nonceRef = useRef(null);
+
   const { data, refetch, isFetching } = useQuery({
     queryKey: ["productBySerial", serialRaw],
     queryFn: () => get(`/products/serial/${serialRaw}`),
     staleTime: 30 * 60_000,
-    enabled: false
-  })
-
-  const toHex = (val) => {
-    if (val === null || val === undefined) return '0x0';
-    if (typeof val === 'bigint') {
-      return '0x' + val.toString(16);
-    }
-    if (typeof val === 'number') {
-      return '0x' + val.toString(16);
-    }
-    if (Array.isArray(val)) {
-      // If it's a byte array, convert to hex
-      return '0x' + val.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-    if (typeof val === 'string') {
-      return val.startsWith('0x') ? val : '0x' + val;
-    }
-    // Last resort: try to convert
-    return '0x' + String(val).toString(16);
-  };
+    enabled: false,
+  });
 
   // Step 2: Generate proof
   const handleGenerateProof = () => {
@@ -60,62 +50,66 @@ function useVerifyAuthenticity(props) {
     generateProof();
   };
 
-
   const generateProof = async () => {
     try {
-
       // 2. Create Noir instance
       const noir = new Noir(circuit);
 
       // 3. Prepare inputs
-      const serialBigInt = stringToBigInt(serialRaw);
+      const serialBigInt = serialToBigInt(serialRaw);
       const secretBigInt = stringToBigInt(secret);
       const serialHashed = poseidon2Hash([serialBigInt]);
-      const authenticityCommitment = poseidon2Hash([secretBigInt, serialBigInt]);
-      const nonce = generateBytes32Nonce();
-
+      const authenticityCommitment = poseidon2Hash([
+        secretBigInt,
+        serialBigInt,
+      ]);
+      const nonceRand = generateBytes32Nonce();
+      nonceRef.current = nonceRand; // Sync ref immediately
+      setNonce(nonceRand);
 
       const input = {
-        order_commitment: toHex(authenticityCommitment),
-        serial_number_hashed: toHex(serialHashed),
-        verify_nonce: toHex(nonce),
-        client_secret: toHex(secretBigInt),
-        client_serial_number: toHex(serialBigInt),
+        order_commitment: toBytes32(authenticityCommitment),
+        serial_number_hashed: toBytes32(serialHashed),
+        verify_nonce: toBytes32(nonceRand),
+        client_secret: toBytes32(secretBigInt),
+        client_serial_number: toBytes32(serialBigInt),
       };
 
       const barretenbergAPI = await Barretenberg.new();
       const backend = new UltraHonkBackend(circuit.bytecode, barretenbergAPI);
+      backendRef.current = { api: barretenbergAPI, backend };
 
       // 4. Generate witness
-
       const { witness } = await noir.execute(input);
 
       // 7. Generate proof
-      const { proof, publicInputs } = await backend.generateProof(witness, {
-        verifierTarget: 'evm',
-      });
+      const { proof, publicInputs: generatedPublicInputs } =
+        await backend.generateProof(witness, {
+          // verifierTarget: "evm",
+          verifierTarget: "evm-no-zk",
+        });
+
+      const isValidImmediate = await backend.verifyProof(
+        { proof, publicInputs: generatedPublicInputs },
+        { keccak: true },
+      );
+
+      console.log("Immediate verify:", isValidImmediate);
+
+      console.log("GENERATED PUBLIC INPUTS (hex):", generatedPublicInputs);
+
+      setStoredPublicInputsHex(generatedPublicInputs); // Save to state
 
       // FIX: Convert Uint8Array proof to hex string
-      const proofHex = '0x' + Array.from(proof)
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('');
+      const proofHexs =
+        "0x" +
+        Array.from(proof)
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
 
-      // Convert publicInputs (BigInt[]) to hex strings
-      const publicInputsHex = publicInputs.map(val =>
-        typeof val === 'bigint' ? '0x' + val.toString(16) : val
-      );
-
-      // Encode with hex strings, decode later when verify proof
-      const result = encodeAbiParameters(
-        [
-          { type: "bytes" },
-          { type: "bytes32[]" }
-        ],
-        [proofHex, publicInputsHex]  // ← Both are now strings
-      );
-
-      setProofHex(result); // proof and public input in form of string hex.
-      setProof(proof);
+      setProofHex(proofHexs); // proof and public input in form of string hex.
+      const proofCopy = new Uint8Array(proof);
+      setProof(proofCopy);
       setLoading(false);
       setStep(3);
     } catch (error) {
@@ -123,10 +117,55 @@ function useVerifyAuthenticity(props) {
       setLoading(false);
       throw error;
     }
-  }
+  };
 
+  const callVerifyProof = async () => {
+    if (!proof || !nonce || !serialRaw) {
+      alert("Proof or nonce not generated yet");
+      return;
+    }
 
+    // setVerifyLoading(true);
 
+    //hashing the serial number
+    const serialBigInt = serialToBigInt(serialRaw);
+    const serialHashed = poseidon2Hash([serialBigInt]);
+
+    const secretBigInt = stringToBigInt(secret);
+
+    const authenticityCommitment = poseidon2Hash([secretBigInt, serialBigInt]);
+    const nonceToUse = nonceRef.current ?? nonce;
+
+    const reconstructedPublicInputs = [
+      toBytes32(authenticityCommitment),
+      toBytes32(serialHashed),
+      toBytes32(nonceToUse),
+    ];
+    console.log(
+      "AUTHENTICITY COMMITMENT verify : ",
+      toBytes32(authenticityCommitment),
+    );
+
+    const { api, backend } = backendRef.current;
+    const isValid = await backend.verifyProof(
+      { proof, publicInputs: reconstructedPublicInputs },
+      { keccak: true },
+    );
+    console.log(`Proof verification: ${isValid ? "SUCCESS" : "FAILED"}`);
+    try {
+      const res = await post("/order/verifyProof", {
+        proof,
+        serialNumber: toBytes32(serialHashed),
+        nonce: toBytes32(nonceToUse),
+      });
+
+      console.log("Success:", res);
+    } catch (err) {
+      console.error("Error:", err);
+    } finally {
+      setVerifyLoading(false);
+    }
+  };
 
   const product = data ? data.data.product : null;
   return {
@@ -145,8 +184,11 @@ function useVerifyAuthenticity(props) {
     setLoading,
     generateProof,
     handleGenerateProof,
-    step, setStep
-  }
+    step,
+    setStep,
+    verifyLoading,
+    callVerifyProof,
+  };
 }
 
 export default useVerifyAuthenticity;

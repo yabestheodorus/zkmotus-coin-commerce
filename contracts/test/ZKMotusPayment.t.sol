@@ -109,7 +109,7 @@ contract ZKMotusPaymentTest is Test {
 
         vm.prank(MERCHANT);
         payment.createNewOrder(ORDER_ID, serialNumbers, TOTAL_PRICE);
-        vm.expectPartialRevert(ZKMotusPayment.ZKMotusPayment__OrderIdExist.selector);
+        vm.expectRevert(abi.encodeWithSelector(ZKMotusPayment.ZKMotusPayment__OrderIdExist.selector, ORDER_ID));
         vm.prank(MERCHANT);
         payment.createNewOrder(ORDER_ID, serialNumbers, TOTAL_PRICE);
     }
@@ -125,7 +125,7 @@ contract ZKMotusPaymentTest is Test {
         payment.receivePayment{value: 0}(ORDER_ID, "");
 
         // test payment with unregistered orderId
-        vm.expectPartialRevert(ZKMotusPayment.ZKMotusPayment__InvalidOrderId.selector);
+        vm.expectRevert(abi.encodeWithSelector(ZKMotusPayment.ZKMotusPayment__InvalidOrderId.selector, ORDER_ID + 2));
         payment.receivePayment{value: TOTAL_PRICE}(ORDER_ID + 2, "");
     }
 
@@ -135,7 +135,7 @@ contract ZKMotusPaymentTest is Test {
         serialNumbers[1] = product2SerialHashed;
         vm.prank(MERCHANT);
         payment.createNewOrder(ORDER_ID, serialNumbers, TOTAL_PRICE);
-        vm.expectPartialRevert(ZKMotusPayment.ZKMotusPayment__IncorrectPaymentAmount.selector);
+         vm.expectRevert(abi.encodeWithSelector(ZKMotusPayment.ZKMotusPayment__IncorrectPaymentAmount.selector, 1e5, 15e16 ));
         payment.receivePayment{value: 1e5}(ORDER_ID, "");
     }
 
@@ -159,7 +159,7 @@ contract ZKMotusPaymentTest is Test {
         payment.createNewOrder(ORDER_ID, serialNumbers, TOTAL_PRICE);
 
         payment.receivePayment{value: TOTAL_PRICE}(ORDER_ID, orderCommitment);
-        vm.expectPartialRevert(ZKMotusPayment.ZKMotusPayment__OrderIdHasBeenPaid.selector);
+         vm.expectRevert(abi.encodeWithSelector(ZKMotusPayment.ZKMotusPayment__OrderIdHasBeenPaid.selector, ORDER_ID));
         payment.receivePayment{value: TOTAL_PRICE}(ORDER_ID, orderCommitment);
     }
 
@@ -176,7 +176,7 @@ contract ZKMotusPaymentTest is Test {
 
         // pay the two orders with the same items inside will revert
         payment.receivePayment{value: TOTAL_PRICE}(ORDER_ID, orderCommitment);
-        vm.expectPartialRevert(ZKMotusPayment.ZKMotusPayment__SerialNumberAlreadyHasOwner.selector);
+         vm.expectRevert(abi.encodeWithSelector(ZKMotusPayment.ZKMotusPayment__SerialNumberAlreadyHasOwner.selector, serialNumbers[0]));
         payment.receivePayment{value: TOTAL_PRICE}(ORDER_ID + 1, orderCommitment);
     }
 

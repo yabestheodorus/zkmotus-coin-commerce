@@ -1,0 +1,68 @@
+{
+  // -------------------------------
+  // General VS Code
+  // -------------------------------
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "editor.detectIndentation": true,
+  "editor.renderWhitespace": "all",
+  "files.autoSave": "onFocusChange",
+  "files.trimTrailingWhitespace": true,
+"editor.formatOnSaveMode": "file",
+  // -------------------------------
+  // Prettier (default formatter)
+  // -------------------------------
+  "prettier.singleQuote": true,
+  "prettier.semi": true,
+  "prettier.trailingComma": "all",
+  "prettier.arrowParens": "always",
+  "prettier.printWidth": 120,
+
+  // -------------------------------
+  // Solidity (Nomic Foundation style)
+  // -------------------------------
+  "[solidity]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "solidity.formatter": "prettier",
+  "solidity.packageDefaultDependenciesContractsDirectory": "node_modules/@openzeppelin/contracts",
+  "solidity.enableLocalNodeCompiler": true,
+
+  // -------------------------------
+  // JavaScript / TypeScript
+  // -------------------------------
+ "prettier.tabWidth": 4,       // or 2, depending on your style
+"prettier.useTabs": false,    // false = spaces, true = tabs
+"[javascript]": {
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
+},
+"[typescript]": {
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
+},
+
+"[javascriptreact]": {
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
+},
+"[typescriptreact]": {
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
+},
+
+  // -------------------------------
+  // Extensions Recommended
+  // -------------------------------
+  "extensions.ignoreRecommendations": false,
+
+
+  // -----------------------------
+  // Font family & weight
+  // -----------------------------
+  "editor.fontFamily": "'JetBrains Mono', 'Fira Code', 'Source Code Pro', 'Inconsolata', 'Ubuntu Mono', monospace",
+  "editor.fontLigatures": true,
+  "editor.fontSize": 18,
+  "editor.fontWeight": "500", // slightly bold
+  "editor.lineHeight": 22, // more breathing space
+  "editor.letterSpacing": 0.5, // soft rounding feel
+
+
+}
