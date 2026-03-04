@@ -95,10 +95,6 @@ export function useRegisterAuthenticity({ serialRaw, serialHash, orderId }) {
       ]);
       const authenticityCommitmentBytes32 = toBytes32(authenticityCommitment);
 
-      console.log(
-        "AUTHENTICITY COMMITMENT REGISTRATION : ",
-        authenticityCommitmentBytes32,
-      );
       const serialBigInt = serialToBigInt(serialRaw);
       const serialHashed = poseidon2Hash([serialBigInt]);
       const serialHashedBytes32 = toBytes32(serialHashed);

@@ -58,7 +58,8 @@ contract ZKMotusRegistry {
     ZKMotusPayment private immutable i_paymentContract;
 
     /// @notice Maps hashed serial number to its purchase commitment
-    mapping(bytes32 serialNumber => bytes32 authenticityCommitment) private s_serialNumberToPurchaseCommitment;
+    mapping(bytes32 serialNumber => bytes32 authenticityCommitment)
+        private s_serialNumberToPurchaseCommitment;
 
     /// @notice Tracks used nonces to prevent replay of proofs
     mapping(bytes32 nonce => bool used) private s_nonceIsUsed;
@@ -94,8 +95,16 @@ contract ZKMotusRegistry {
      * @param _merchantAddress Merchant authorized to verify proofs
      * @param zkVerifier Address of the deployed ZK verifier contract
      */
-    constructor(address payable _paymentContract, address _merchantAddress, address zkVerifier) {
-        if (_merchantAddress == address(0) || _paymentContract == address(0) || zkVerifier == address(0)) {
+    constructor(
+        address payable _paymentContract,
+        address _merchantAddress,
+        address zkVerifier
+    ) {
+        if (
+            _merchantAddress == address(0) ||
+            _paymentContract == address(0) ||
+            zkVerifier == address(0)
+        ) {
             revert ZKMotusRegistry__ZeroValue();
         }
         i_merchant = _merchantAddress;
@@ -122,15 +131,19 @@ contract ZKMotusRegistry {
      * @param _orderCommitment Commitment submitted when paying order
      * @param _serialNumber Hashed serial number of the item
      */
-    function registerAuthenticity(bytes32 _authenticityCommitment, bytes32 _orderCommitment, bytes32 _serialNumber)
-        external
-    {
+    function registerAuthenticity(
+        bytes32 _authenticityCommitment,
+        bytes32 _orderCommitment,
+        bytes32 _serialNumber
+    ) external {
         if (_authenticityCommitment == bytes32(0)) {
             revert ZKMotusRegistry__ZeroValue();
         }
         // user registering purchased item by providing purchase commitment, orderId, and serial number
         // firstly, check to payment contract if the items already paid, and paid by correct address
-        bytes32 commitment = i_paymentContract.getCommitmentFromSerialNumber(_serialNumber);
+        bytes32 commitment = i_paymentContract.getCommitmentFromSerialNumber(
+            _serialNumber
+        );
 
         if (commitment == bytes32(0)) {
             revert ZKMotusRegistry__ItemNotPaid(_serialNumber);
@@ -148,7 +161,9 @@ contract ZKMotusRegistry {
         }
 
         // store purchase commitment mapped to serial number
-        s_serialNumberToPurchaseCommitment[_serialNumber] = _authenticityCommitment;
+        s_serialNumberToPurchaseCommitment[
+            _serialNumber
+        ] = _authenticityCommitment;
 
         emit ItemsAuthenticityRegistered(_serialNumber);
     }
@@ -165,12 +180,18 @@ contract ZKMotusRegistry {
      * @param _nonce One-time nonce included in the proof public inputs
      *
      */
-    function verifyAuthenticity(bytes calldata _proof, bytes32 _serialNumber, bytes32 _nonce) external onlyMerchant {
+    function verifyAuthenticity(
+        bytes calldata _proof,
+        bytes32 _serialNumber,
+        bytes32 _nonce
+    ) external onlyMerchant {
         if (s_nonceIsUsed[_nonce]) {
             revert ZKMotusRegistry__InvalidNonce(_nonce);
         }
         bytes32[] memory publicInputs = new bytes32[](3);
-        bytes32 authenticityCommitment = s_serialNumberToPurchaseCommitment[_serialNumber];
+        bytes32 authenticityCommitment = s_serialNumberToPurchaseCommitment[
+            _serialNumber
+        ];
 
         if (authenticityCommitment == bytes32(0)) {
             revert ZKMotusRegistry__ItemNotRegistered(_serialNumber);
@@ -182,10 +203,9 @@ contract ZKMotusRegistry {
 
         try i_zkVerifier.verify(_proof, publicInputs) returns (bool ok) {
             if (!ok) revert ZKMotusRegistry__InvalidProof();
-        } catch {
+        } catch (bytes memory revertData) {
             revert ZKMotusRegistry__InvalidProof();
         }
-
         s_nonceIsUsed[_nonce] = true;
         emit AuthenticityVerified(_serialNumber);
     }

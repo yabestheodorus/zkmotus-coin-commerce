@@ -20,6 +20,8 @@ import {
   stringToBigInt,
   toBytes32,
 } from "../../../../Utils";
+import toast from "react-hot-toast";
+import Notification from "../../../layout/Notification";
 
 function useVerifyAuthenticity(props) {
   const [secret, setSecret] = useState("");
@@ -85,22 +87,18 @@ function useVerifyAuthenticity(props) {
       // 7. Generate proof
       const { proof, publicInputs: generatedPublicInputs } =
         await backend.generateProof(witness, {
-          // verifierTarget: "evm",
-          verifierTarget: "evm-no-zk",
+          verifierTarget: "evm",
         });
 
-      const isValidImmediate = await backend.verifyProof(
-        { proof, publicInputs: generatedPublicInputs },
-        { keccak: true },
-      );
-
-      console.log("Immediate verify:", isValidImmediate);
-
-      console.log("GENERATED PUBLIC INPUTS (hex):", generatedPublicInputs);
+      // 3. Convert to hex (your existing logic)
+      const proofHex =
+        "0x" +
+        Array.from(proof)
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
 
       setStoredPublicInputsHex(generatedPublicInputs); // Save to state
 
-      // FIX: Convert Uint8Array proof to hex string
       const proofHexs =
         "0x" +
         Array.from(proof)
@@ -125,43 +123,31 @@ function useVerifyAuthenticity(props) {
       return;
     }
 
-    // setVerifyLoading(true);
+    setVerifyLoading(true);
 
-    //hashing the serial number
     const serialBigInt = serialToBigInt(serialRaw);
     const serialHashed = poseidon2Hash([serialBigInt]);
 
-    const secretBigInt = stringToBigInt(secret);
-
-    const authenticityCommitment = poseidon2Hash([secretBigInt, serialBigInt]);
     const nonceToUse = nonceRef.current ?? nonce;
 
-    const reconstructedPublicInputs = [
-      toBytes32(authenticityCommitment),
-      toBytes32(serialHashed),
-      toBytes32(nonceToUse),
-    ];
-    console.log(
-      "AUTHENTICITY COMMITMENT verify : ",
-      toBytes32(authenticityCommitment),
-    );
-
-    const { api, backend } = backendRef.current;
-    const isValid = await backend.verifyProof(
-      { proof, publicInputs: reconstructedPublicInputs },
-      { keccak: true },
-    );
-    console.log(`Proof verification: ${isValid ? "SUCCESS" : "FAILED"}`);
     try {
       const res = await post("/order/verifyProof", {
-        proof,
+        proof: proofHex,
         serialNumber: toBytes32(serialHashed),
         nonce: toBytes32(nonceToUse),
       });
 
-      console.log("Success:", res);
+      toast.custom((t) => {
+        return (
+          <Notification
+            visible={t.visible}
+            title="Verification Succeed!"
+            subtitle={` ${res.message}`}
+          />
+        );
+      });
     } catch (err) {
-      console.error("Error:", err);
+      console.error("Error:", JSON.stringify(err.response.data.message));
     } finally {
       setVerifyLoading(false);
     }

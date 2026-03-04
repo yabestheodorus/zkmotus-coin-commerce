@@ -34,7 +34,7 @@ function InputSecretModal({ orderId, totalAmount }) {
         <FaArrowRight className="ml-1 transition-transform group-hover:translate-x-1" />
       </button>
       <dialog id={modalId} className="modal">
-        <div class="modal-box">
+        <div className="modal-box">
           <div className="flex w-full flex-col items-center gap-5">
             {/* Warning */}
             <div className="border-burgundy/30 bg-burgundy/5 mt-4 w-full rounded-xl border p-4 text-sm">
@@ -137,7 +137,7 @@ function InputSecretModal({ orderId, totalAmount }) {
             </button>
           </div>
         </div>
-        <form method="dialog" class="modal-backdrop">
+        <form method="dialog" className="modal-backdrop">
           <button>close</button>
         </form>
       </dialog>

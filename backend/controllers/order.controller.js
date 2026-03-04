@@ -1,6 +1,7 @@
 import Order from '../models/order.model.js';
 import Product from '../models/product.model.js';
-import { ethers } from 'ethers';
+import { ethers, zeroPadValue, id, Interface } from 'ethers';
+
 // import paymentAbi from "../abi/Payment.json";
 import { poseidon2Hash } from '@zkpassport/poseidon2';
 import { generateSerial, getLastSerialIndex, serialToBigInt } from './serial.controller.js';
@@ -9,8 +10,7 @@ import ZKMotusPayment from '../abi/ZKMotusPayment.abi.json' with { type: 'json' 
 import ZKMotusRegistry from '../abi/ZKMotusRegistry.abi.json' with { type: 'json' };
 import { generateNumericId } from '../utils/orderStateMachine.js';
 
-import { zeroPadValue } from 'ethers';
-import { id } from 'ethers';
+const iface = new Interface(ZKMotusRegistry);
 
 export const getOrderList = async (req, res) => {
     const { buyerAddress } = req.query;
@@ -57,7 +57,7 @@ export const getOrderList = async (req, res) => {
         // console.log("result nya :", result)
         res.status(200).json({ data: result });
     } catch (err) {
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ success: false, message: 'Get OrderList failed' });
     }
 };
 
@@ -157,7 +157,7 @@ export const prepareOrder = async (req, res) => {
     } catch (error) {
         console.log('Failed creating order contract call : ', error);
         await Order.deleteOne({ orderId });
-        return res.status(500).json({ error: 'createNewOrder reverted' });
+        return res.status(500).json({ success: false, message: 'Create Order failed' });
     }
 
     // 5️⃣ DB waits for blockchain event
@@ -223,15 +223,33 @@ export const verifyProof = async (req, res) => {
 
         return res.status(200).json({
             success: true,
+            message: 'Your item has been verified successfully!',
             txHash: receipt.hash,
         });
     } catch (err) {
-        console.error('verifyProof error:', err);
+        // console.error('verifyProof error:', err);
 
-        return res.status(500).json({
-            success: false,
-            message: 'Verification failed',
-            error: parseEthersError(err),
-        });
+        // 🔍 Extract revert data (try both locations)
+        const revertData = err.info?.error?.data;
+
+        const selector = revertData.slice(0, 10);
+        // 2. Get the error fragment from ABI
+        const errorFragment = iface.getError(selector);
+
+        if (errorFragment) {
+            // 3. Decode the arguments (will be empty array for no-arg errors)
+            console.log('  Name:', errorFragment.name); // e.g., "SumcheckFailed"
+
+            return res.status(500).json({
+                success: false,
+                message: 'Verification failed : ' + errorFragment.name,
+            });
+        } else {
+            console.log('❌ Error selector not found in ABI:', selector);
+            return res.status(500).json({
+                success: false,
+                message: 'Verification failed',
+            });
+        }
     }
 };

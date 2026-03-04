@@ -1,4 +1,6 @@
 import axios from "axios";
+import Notification from "../layout/Notification";
+import toast from "react-hot-toast";
 
 const ApiClient = axios.create({
   baseURL: import.meta.env.VITE_BASE_URL,
@@ -26,6 +28,17 @@ ApiClient.interceptors.response.use(
       const status = error.response.status;
     }
 
+    if (error?.response?.data?.message) {
+      toast.custom((t) => {
+        return (
+          <Notification
+            visible={t.visible}
+            title="Something is wrong!"
+            subtitle={` ${error.response.data.message}`}
+          />
+        );
+      });
+    }
     return Promise.reject(error);
   },
 );

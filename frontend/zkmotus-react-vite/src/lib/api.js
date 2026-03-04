@@ -1,5 +1,5 @@
 // src/lib/api.js
-import ApiClient from "./ApiClient";
+import ApiClient from "./ApiClient.jsx";
 
 export const get = (url, params = {}, config = {}) =>
   ApiClient.get(url, { params, ...config });

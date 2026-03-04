@@ -1,5 +1,5 @@
 import { GiWaxSeal } from "react-icons/gi";
-import useVerifyAuthenticity from "./hooks/useVerifyAuthenticity";
+import useVerifyAuthenticity from "./hooks/useVerifyAuthenticity.jsx";
 import SerialNumberInput from "./components/SerialNumberInput";
 import ProductInfo from "./components/ProductInfo";
 import ProofInfo from "./components/ProofInfo";
@@ -23,13 +23,13 @@ export default function VerifyPage() {
     handleGenerateProof,
     step,
     setStep,
-     verifyLoading,
+    verifyLoading,
     callVerifyProof,
   } = useVerifyAuthenticity();
 
   // Step 3: Verify proof
   const handleVerifyProof = async () => {
-    await callVerifyProof()
+    await callVerifyProof();
 
     // setTimeout(() => {
     //   setLoading(false);

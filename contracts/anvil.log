@@ -1,0 +1,7 @@
+error: unexpected argument '--verbose' found
+
+  tip: a similar argument exists: '--verbosity'
+
+Usage: anvil --verbosity...
+
+For more information, try '--help'.
