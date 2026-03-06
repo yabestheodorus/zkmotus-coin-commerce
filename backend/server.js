@@ -26,41 +26,6 @@ setupOrderEvents().catch((err) => {
     process.exit(1); // Critical failure — stop server
 });
 
-setTimeout(async () => {
-    const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
-    const latestBlock = await provider.getBlockNumber();
-
-    const fromBlock = Math.max(0, latestBlock - 10);
-    const toBlock = latestBlock;
-
-    const logs = await provider.getLogs({
-        address: process.env.PAYMENT_CONTRACT,
-        fromBlock,
-        toBlock,
-    });
-
-    console.log(`\n=== RAW LOGS FROM LAST 10 BLOCKS ===`);
-    console.log(`Found ${logs.length} logs from contract ${process.env.PAYMENT_CONTRACT}`);
-
-    logs.forEach((log, i) => {
-        console.log(`\nLog ${i + 1}:`);
-        console.log(`  Block: ${log.blockNumber}`);
-        console.log(`  Topics: ${log.topics}`);
-        console.log(`  Data: ${log.data}`);
-    });
-
-    // Try to parse them manually
-    const contract = new ethers.Contract(process.env.PAYMENT_CONTRACT, ZKMotusPayment, provider);
-    logs.forEach((log, i) => {
-        try {
-            const parsed = contract.interface.parseLog(log);
-            console.log(`\n✅ Log ${i + 1} parsed as event:`, parsed.name, parsed.args);
-        } catch (e) {
-            console.log(`\n❌ Log ${i + 1} could not be parsed:`, e.message);
-        }
-    });
-}, 5000);
-
 // Routes
 app.use('/api/products', productRoutes);
 app.use('/api/wishlist', wishlistRoutes);
