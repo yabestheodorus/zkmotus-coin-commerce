@@ -191,31 +191,6 @@ export const verifyProof = async (req, res) => {
         if (!serialNumber.startsWith('0x')) serialNumber = '0x' + serialNumber;
         if (!nonce.startsWith('0x')) nonce = '0x' + nonce;
 
-        console.log('Calling verifyAuthenticity...');
-        console.log(
-            'ZKMotusRegistry__ItemsAlreadyRegistered:',
-            id('ZKMotusRegistry__ItemsAlreadyRegistered(bytes32)').slice(0, 10),
-        );
-
-        console.log(
-            'ZKMotusRegistry__UnauthorizedBuyer:',
-            id('ZKMotusRegistry__UnauthorizedBuyer(bytes32)').slice(0, 10),
-        );
-
-        console.log('ZKMotusRegistry__ItemNotPaid:', id('ZKMotusRegistry__ItemNotPaid(bytes32)').slice(0, 10));
-
-        console.log('ZKMotusRegistry__NotFromMerchant:', id('ZKMotusRegistry__NotFromMerchant(address)').slice(0, 10));
-
-        console.log('ZKMotusRegistry__ZeroValue:', id('ZKMotusRegistry__ZeroValue()').slice(0, 10));
-
-        console.log(
-            'ZKMotusRegistry__ItemNotRegistered:',
-            id('ZKMotusRegistry__ItemNotRegistered(bytes32)').slice(0, 10),
-        );
-
-        console.log('ZKMotusRegistry__InvalidNonce:', id('ZKMotusRegistry__InvalidNonce(bytes32)').slice(0, 10));
-
-        console.log('ZKMotusRegistry__InvalidProof:', id('ZKMotusRegistry__InvalidProof()').slice(0, 10));
         // 🚀 Send tx
         const tx = await registryContract.verifyAuthenticity(proof, serialNumber, nonce);
 

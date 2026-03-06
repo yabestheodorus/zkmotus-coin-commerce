@@ -3,6 +3,7 @@ import useVerifyAuthenticity from "./hooks/useVerifyAuthenticity.jsx";
 import SerialNumberInput from "./components/SerialNumberInput";
 import ProductInfo from "./components/ProductInfo";
 import ProofInfo from "./components/ProofInfo";
+import VerificationSuccess from "./components/VerificationSuccess.jsx";
 
 export default function VerifyPage() {
   const {
@@ -25,6 +26,7 @@ export default function VerifyPage() {
     setStep,
     verifyLoading,
     callVerifyProof,
+    verifyTxHash,
   } = useVerifyAuthenticity();
 
   // Step 3: Verify proof
@@ -80,43 +82,20 @@ export default function VerifyPage() {
           />
         )}
 
-        {/* Step 4: Verified */}
         {step === 4 && (
-          <div className="flex w-full flex-col items-center gap-6 text-center">
-            <GiWaxSeal size={50} className="animate-pulse text-yellow-800" />
-            <h2 className="text-xl font-semibold">Verified!</h2>
-            <p className="text-sm opacity-70">
-              Ownership and authenticity confirmed privately.
-            </p>
-
-            {/* ZK Explanation */}
-            <div className="bg-ink/5 space-y-2 rounded-2xl p-4 text-left text-sm">
-              <p>
-                <span className="font-medium">Zero-Knowledge Proof:</span> Your
-                ownership is proven without revealing your private data.
-              </p>
-              <p>
-                <span className="font-medium">Privacy Preserved:</span> Only the
-                authenticity is verified, your identity stays confidential.
-              </p>
-              <p>
-                <span className="font-medium">Counterfeit Protection:</span>{" "}
-                Each item is cryptographically registered, so fake products
-                cannot pass verification.
-              </p>
-              <p className="text-ink/60 italic">
-                This ensures secure verification for luxury items, collectibles,
-                and limited editions.
-              </p>
-            </div>
-
-            <button
-              className="bg-burgundy text-parchment mt-4 rounded-full px-6 py-3 font-medium hover:brightness-110"
-              onClick={() => setStep(1)}
-            >
-              Verify Another Item
-            </button>
-          </div>
+          <VerificationSuccess
+            serialRaw={serialRaw}
+            productName={product?.name}
+            imageUrl={product.imageURL.thumbnail}
+            verificationId={verifyTxHash}
+            commitmentHash={"fafeasdfdasfacasefggda"}
+            onDownload={() => {
+              // TODO: Generate PDF with html2canvas + jsPDF
+            }}
+            onCopy={(text) => {
+              // TODO: navigator.clipboard.writeText(text)
+            }}
+          />
         )}
       </div>
     </div>

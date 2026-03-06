@@ -31,10 +31,11 @@ function useVerifyAuthenticity(props) {
   const [serialRaw, setSerialRaw] = useState("");
   const [proofHex, setProofHex] = useState("");
   const [proof, setProof] = useState("");
+  const [verifyTxHash, setVerifyTxHash] = useState("");
+
   const [step, setStep] = useState(1); // 1–4
 
   const [nonce, setNonce] = useState(null);
-  const [storedPublicInputsHex, setStoredPublicInputsHex] = useState(null);
 
   const backendRef = useRef(null);
   const nonceRef = useRef(null);
@@ -90,15 +91,6 @@ function useVerifyAuthenticity(props) {
           verifierTarget: "evm",
         });
 
-      // 3. Convert to hex (your existing logic)
-      const proofHex =
-        "0x" +
-        Array.from(proof)
-          .map((b) => b.toString(16).padStart(2, "0"))
-          .join("");
-
-      setStoredPublicInputsHex(generatedPublicInputs); // Save to state
-
       const proofHexs =
         "0x" +
         Array.from(proof)
@@ -137,6 +129,8 @@ function useVerifyAuthenticity(props) {
         nonce: toBytes32(nonceToUse),
       });
 
+      setVerifyTxHash(res.txHash);
+
       toast.custom((t) => {
         return (
           <Notification
@@ -146,6 +140,7 @@ function useVerifyAuthenticity(props) {
           />
         );
       });
+      setStep(4);
     } catch (err) {
       console.error("Error:", JSON.stringify(err.response.data.message));
     } finally {
@@ -174,6 +169,8 @@ function useVerifyAuthenticity(props) {
     setStep,
     verifyLoading,
     callVerifyProof,
+    setVerifyTxHash,
+    verifyTxHash,
   };
 }
 

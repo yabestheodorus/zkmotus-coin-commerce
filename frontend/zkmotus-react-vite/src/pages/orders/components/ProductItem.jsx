@@ -2,6 +2,7 @@ import React from "react";
 import { formatRoundedBalance } from "../../../../Utils";
 import { TbScan } from "react-icons/tb";
 import RegisterAuthenticityDialog from "../../registerAuthenticity/hook/RegisterAuthenticityDialog";
+import { IoIosCopy } from "react-icons/io";
 
 // Status badge styling based on status value
 const getStatusStyle = (status) => {
@@ -76,14 +77,24 @@ const ProductItem = ({
             {formatRoundedBalance(product.price)} ETH
           </span>
         </p>
-
         {/* Serial number */}
-        <div className="mt-2 flex flex-wrap items-center gap-2">
-          <span className="bg-parchment text-ink rounded-md px-2 py-1 text-xs font-medium select-all">
+        <div className="mt-2 flex items-center gap-2">
+          <span className="bg-parchment text-ink border-ink/10 rounded-md border px-3 py-1.5 text-xs font-medium select-none">
             Serial: {serial}
           </span>
-        </div>
+          <button
+            onClick={() => navigator.clipboard.writeText(serial)}
+            className="group text-ink/40 hover:text-burgundy hover:bg-burgundy/10 relative flex cursor-pointer items-center justify-center rounded-md p-1.5 transition-all"
+            title="Copy to clipboard"
+          >
+            <IoIosCopy size={16} />
 
+            {/* Tooltip */}
+            <span className="bg-ink pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 rounded px-2 py-1 text-[10px] whitespace-nowrap text-white opacity-0 transition-opacity group-hover:opacity-100">
+              Copy
+            </span>
+          </button>
+        </div>
         {/* Status badge with visual indicator */}
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <div
