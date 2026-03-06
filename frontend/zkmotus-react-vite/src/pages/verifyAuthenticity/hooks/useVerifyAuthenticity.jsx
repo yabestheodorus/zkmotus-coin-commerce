@@ -142,7 +142,7 @@ function useVerifyAuthenticity(props) {
       });
       setStep(4);
     } catch (err) {
-      console.error("Error:", JSON.stringify(err.response.data.message));
+      console.error("Error:", JSON.stringify(err.response));
     } finally {
       setVerifyLoading(false);
     }
